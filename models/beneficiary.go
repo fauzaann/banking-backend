@@ -2,6 +2,7 @@ package models
 
 import "time"
 
+// Beneficiary merepresentasikan entitas beneficiary (penerima transfer) dalam sistem.
 type Beneficiary struct {
 	ID            uint      `gorm:"primaryKey" json:"id"`
 	UserID        uint      `gorm:"not null;index:idx_beneficiary_user_account,unique" json:"user_id"`

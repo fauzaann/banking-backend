@@ -11,9 +11,9 @@ import (
 type BeneficiaryRepository interface {
 	Create(ctx context.Context, beneficiary *models.Beneficiary) error
 	FindByID(ctx context.Context, id uint) (*models.Beneficiary, error)
-	FindByUserIDAndAccountNumber(ctx context.Context, userID uint, accountNumber string) (*models.Beneficiary, error)
-	FindAllByUserID(ctx context.Context, userID uint) ([]models.Beneficiary, error)
-	Delete(ctx context.Context, beneficiary *models.Beneficiary) error
+	FindByUserID(ctx context.Context, userID uint) ([]models.Beneficiary, error)
+	ExistsByUserAndNumber(ctx context.Context, userID uint, number string) (bool, error)
+	Delete(ctx context.Context, id uint) error
 }
 
 type beneficiaryRepository struct {

@@ -9,11 +9,13 @@ import (
 	"banking/repository"
 )
 
+// CreateBeneficiaryRequest adalah struktur data yang digunakan untuk permintaan pembuatan beneficiary baru.
 type CreateBeneficiaryRequest struct {
 	AccountNumber string `json:"account_number" validate:"required,min=6,max=20"`
 	Nickname      string `json:"nickname" validate:"required,min=2,max=100"`
 }
 
+// BeneficiaryResponse adalah struktur data yang digunakan untuk merespons permintaan terkait beneficiary.
 type BeneficiaryResponse struct {
 	ID            uint      `json:"id"`
 	AccountNumber string    `json:"account_number"`
@@ -22,6 +24,7 @@ type BeneficiaryResponse struct {
 	CreatedAt     time.Time `json:"created_at"`
 }
 
+// BeneficiaryController adalah antarmuka untuk mengelola operasi terkait beneficiary.
 type BeneficiaryController interface {
 	Create(ctx context.Context, userID uint, req CreateBeneficiaryRequest, ip string) (*BeneficiaryResponse, error)
 	List(ctx context.Context, userID uint) ([]BeneficiaryResponse, error)
@@ -29,6 +32,7 @@ type BeneficiaryController interface {
 	Delete(ctx context.Context, userID, id uint, ip string) error
 }
 
+// beneficiaryController adalah implementasi dari BeneficiaryController.
 type beneficiaryController struct {
 	benefRepo   repository.BeneficiaryRepository
 	accountRepo repository.AccountRepository
@@ -36,6 +40,7 @@ type beneficiaryController struct {
 	auditRepo   repository.AuditRepository
 }
 
+// NewBeneficiaryController membuat instance baru dari beneficiaryController dengan repositori beneficiary, account, user, dan audit yang diberikan.
 func NewBeneficiaryController(
 	benefRepo repository.BeneficiaryRepository,
 	accountRepo repository.AccountRepository,
@@ -48,6 +53,7 @@ func NewBeneficiaryController(
 	}
 }
 
+// Create membuat beneficiary baru untuk user tertentu.
 func (c *beneficiaryController) Create(ctx context.Context, userID uint, req CreateBeneficiaryRequest, ip string) (*BeneficiaryResponse, error) {
 	// Rekening tujuan wajib benar-benar ada dan tidak tertutup.
 	account, err := c.accountRepo.FindByNumber(ctx, req.AccountNumber)
@@ -88,6 +94,7 @@ func (c *beneficiaryController) Create(ctx context.Context, userID uint, req Cre
 	return &res, nil
 }
 
+// List mengambil daftar beneficiary untuk user tertentu.
 func (c *beneficiaryController) List(ctx context.Context, userID uint) ([]BeneficiaryResponse, error) {
 	list, err := c.benefRepo.FindByUserID(ctx, userID)
 	if err != nil {
@@ -100,6 +107,7 @@ func (c *beneficiaryController) List(ctx context.Context, userID uint) ([]Benefi
 	return out, nil
 }
 
+// Detail mengambil detail beneficiary tertentu untuk user tertentu.
 func (c *beneficiaryController) Detail(ctx context.Context, userID, id uint) (*BeneficiaryResponse, error) {
 	benef, err := c.find(ctx, userID, id)
 	if err != nil {
@@ -109,6 +117,7 @@ func (c *beneficiaryController) Detail(ctx context.Context, userID, id uint) (*B
 	return &res, nil
 }
 
+// Delete menghapus beneficiary tertentu untuk user tertentu.
 func (c *beneficiaryController) Delete(ctx context.Context, userID, id uint, ip string) error {
 	benef, err := c.find(ctx, userID, id)
 	if err != nil {
@@ -122,6 +131,7 @@ func (c *beneficiaryController) Delete(ctx context.Context, userID, id uint, ip 
 	return nil
 }
 
+// find adalah metode internal untuk menemukan beneficiary berdasarkan userID dan id beneficiary, memastikan bahwa beneficiary tersebut milik user yang bersangkutan.
 func (c *beneficiaryController) find(ctx context.Context, userID, id uint) (*models.Beneficiary, error) {
 	benef, err := c.benefRepo.FindByID(ctx, id)
 	if err != nil {
@@ -136,6 +146,7 @@ func (c *beneficiaryController) find(ctx context.Context, userID, id uint) (*mod
 	return benef, nil
 }
 
+// toResponse mengubah entitas Beneficiary menjadi struktur data BeneficiaryResponse, termasuk mengambil nama pemilik rekening tujuan jika tersedia.	
 func (c *beneficiaryController) toResponse(ctx context.Context, b *models.Beneficiary) BeneficiaryResponse {
 	res := BeneficiaryResponse{
 		ID: b.ID, AccountNumber: b.AccountNumber,
